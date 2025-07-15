@@ -1,15 +1,32 @@
 const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 async function init() {
-  // Fetch and instantiate the compiled WebAssembly module (log.wasm should be built first).
+  // Fetch the Wasm module bytes.
   const bytes = await fetch('log.wasm').then(r => r.arrayBuffer());
-  const { instance } = await WebAssembly.instantiate(bytes, {});
+
+  // We'll fill this reference after instantiation so the import can access memory.
+  let memoryRef;
+
+  const originalLog = console.log.bind(console);
+
+  // Import object: the Wasm module will call env.log_sink(ptr,len).
+  const importObject = {
+    env: {
+      log_sink(ptr, len) {
+        // Decode the UTF-8 message from Wasm memory and print it.
+        const msg = decoder.decode(new Uint8Array(memoryRef.buffer, ptr, len));
+        originalLog('[WASM]', msg);
+      }
+    }
+  };
+
+  // Instantiate with imports so `log_sink` is wired up.
+  const { instance } = await WebAssembly.instantiate(bytes, importObject);
 
   // Convenience handles to the exported members.
   const { memory, log_string, malloc, free } = instance.exports;
-
-  // Preserve the original console.log in case you still want dev-tools output.
-  const originalLog = console.log.bind(console);
+  memoryRef = memory;
 
   // Override console.log so every call is routed through Wasm.
   console.log = (...args) => {
