@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WASM Console.log Override Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        
+        .demo-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        
+        button {
+            background-color: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background-color: #005a99;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .status.loading {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .console-output {
+            background-color: #1e1e1e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        
+        .note {
+            background-color: #e7f3ff;
+            border-left: 4px solid #007acc;
+            padding: 12px;
+            margin: 15px 0;
+        }
+        
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 WASM Console.log Override Demo</h1>
+        
+        <div id="status" class="status loading">
+            📥 Loading WASM module...
+        </div>
+        
+        <div class="demo-section">
+            <h3>📝 About This Demo</h3>
+            <p>This demonstration shows how to use WebAssembly (WASM) to override JavaScript's <code>console.log</code> function. 
+            The WASM module intercepts console calls and adds custom formatting, timestamps, and processing before 
+            displaying the output.</p>
+            
+            <div class="note">
+                <strong>Note:</strong> Open your browser's Developer Tools (F12) to see the console output with WASM processing!
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>🧪 Test Console Functions</h3>
+            <p>Click these buttons to test different console methods with WASM override:</p>
+            
+            <button onclick="testBasicLog()">Basic console.log</button>
+            <button onclick="testObjectLog()">Log Object</button>
+            <button onclick="testArrayLog()">Log Array</button>
+            <button onclick="testInfoLog()">console.info</button>
+            <button onclick="testWarnLog()">console.warn</button>
+            <button onclick="testErrorLog()">console.error</button>
+            <button onclick="testMultipleArgs()">Multiple Arguments</button>
+        </div>
+        
+        <div class="demo-section">
+            <h3>⚙️ Control Functions</h3>
+            <button onclick="restoreOriginal()">Restore Original Console</button>
+            <button onclick="reinitializeWasm()">Reinitialize WASM</button>
+            <button onclick="checkWasmStatus()">Check WASM Status</button>
+        </div>
+        
+        <div class="demo-section">
+            <h3>📊 How It Works</h3>
+            <ol>
+                <li><strong>WASM Module:</strong> Compiled from C code using Emscripten</li>
+                <li><strong>JavaScript Wrapper:</strong> Loads WASM and overrides console functions</li>
+                <li><strong>Memory Management:</strong> Handles string passing between JS and WASM</li>
+                <li><strong>Custom Processing:</strong> Adds timestamps and formatting in WASM</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Load the WASM console override script -->
+    <script src="wasm_console_override.js"></script>
+    
+    <script>
+        // Demo functions
+        function updateStatus(message, type = 'loading') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function testBasicLog() {
+            console.log('Hello from WASM-overridden console.log!');
+        }
+        
+        function testObjectLog() {
+            const testObj = {
+                name: 'WASM Demo',
+                version: '1.0.0',
+                features: ['console override', 'custom formatting', 'memory management']
+            };
+            console.log('Testing object logging:', testObj);
+        }
+        
+        function testArrayLog() {
+            const testArray = [1, 2, 3, 'WASM', true, null];
+            console.log('Testing array logging:', testArray);
+        }
+        
+        function testInfoLog() {
+            console.info('This is an info message processed by WASM');
+        }
+        
+        function testWarnLog() {
+            console.warn('This is a warning message processed by WASM');
+        }
+        
+        function testErrorLog() {
+            console.error('This is an error message processed by WASM');
+        }
+        
+        function testMultipleArgs() {
+            console.log('Multiple', 'arguments', 123, true, { nested: 'object' });
+        }
+        
+        function restoreOriginal() {
+            if (window.wasmConsoleOverride) {
+                window.wasmConsoleOverride.restore();
+                updateStatus('✅ Original console functions restored', 'success');
+            }
+        }
+        
+        async function reinitializeWasm() {
+            try {
+                updateStatus('🔄 Reinitializing WASM module...', 'loading');
+                if (window.wasmConsoleOverride) {
+                    await window.wasmConsoleOverride.initialize();
+                    updateStatus('✅ WASM module reinitialized successfully', 'success');
+                }
+            } catch (error) {
+                updateStatus(`❌ Failed to reinitialize: ${error.message}`, 'error');
+            }
+        }
+        
+        function checkWasmStatus() {
+            if (window.wasmConsoleOverride) {
+                const isReady = window.wasmConsoleOverride.isReady();
+                const message = isReady ? 
+                    '✅ WASM module is ready and active' : 
+                    '⚠️ WASM module is not ready';
+                updateStatus(message, isReady ? 'success' : 'error');
+                console.log('WASM status check:', isReady ? 'READY' : 'NOT READY');
+            } else {
+                updateStatus('❌ WASM module not found', 'error');
+            }
+        }
+        
+        // Listen for WASM initialization
+        if (window.wasmConsoleOverride) {
+            // Check if already initialized
+            if (window.wasmConsoleOverride.isReady()) {
+                updateStatus('✅ WASM Console Override Active', 'success');
+            } else {
+                // Wait for initialization
+                const checkInit = setInterval(() => {
+                    if (window.wasmConsoleOverride.isReady()) {
+                        updateStatus('✅ WASM Console Override Active', 'success');
+                        clearInterval(checkInit);
+                        
+                        // Test the override
+                        console.log('🎉 WASM console override is now active!');
+                    }
+                }, 100);
+                
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    clearInterval(checkInit);
+                    if (!window.wasmConsoleOverride.isReady()) {
+                        updateStatus('❌ WASM initialization timeout', 'error');
+                    }
+                }, 10000);
+            }
+        }
+        
+        // Add some initial logging to show the difference
+        setTimeout(() => {
+            if (window.wasmConsoleOverride && window.wasmConsoleOverride.isReady()) {
+                console.log('Demo loaded! Try the buttons above to test WASM console override.');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
